@@ -4,16 +4,17 @@ import { Database } from './server';
 const DEFAULT_TTL = 300; // 5 minutes
 
 const ABI = [
-  "function getSubnameOwner(string) view returns (address)",
+  // https://github.com/ensdomains/ens-contracts/blob/5421b5689e695531dc9739f0ad861839bdd231cb/contracts/resolvers/profiles/AddrResolver.sol#L35
+  "function addr(bytes32) public view returns (address)"
 ];
 
-export class DarwiniaDatabase implements Database {
+export class L2Resolver implements Database {
   private provider: ethers.providers.JsonRpcProvider;
   private contract: ethers.Contract;
 
-  constructor(darwinia_rpc_url: string, darwinia_subname_registry_contract_address: string) {
-    this.provider = new ethers.providers.JsonRpcProvider(darwinia_rpc_url);
-    this.contract = new ethers.Contract(darwinia_subname_registry_contract_address, ABI, this.provider);
+  constructor(darwiniaRpcUrl: string, l2ResolverAddress: string) {
+    this.provider = new ethers.providers.JsonRpcProvider(darwiniaRpcUrl);
+    this.contract = new ethers.Contract(l2ResolverAddress, ABI, this.provider);
   }
 
   async addr(name: string, coinType: number): Promise<{ addr: string; ttl: number }> {
@@ -21,8 +22,9 @@ export class DarwiniaDatabase implements Database {
       return { addr: ethers.constants.AddressZero, ttl: DEFAULT_TTL };
     }
 
+    // https://app.ens.domains/ringdao.eth
     if (name === 'ringdao.eth') {
-      return { addr: '0x1234567890123456789012345678901234567890', ttl: DEFAULT_TTL };
+      return { addr: '0x1D5C90E40A3b546a4Ff5cfFf7B2fF8FB7D2bfa32', ttl: DEFAULT_TTL };
     }
 
     // "a.b.ringdao.eth" is not allowed. only "a.ringdao.eth" is allowed.
@@ -33,7 +35,7 @@ export class DarwiniaDatabase implements Database {
     try {
       console.log('querying', name);
       const subname = name.split('.')[0]
-      const owner = await this.contract.getSubnameOwner(subname);
+      const owner = await this.contract.addr(ethers.utils.namehash(subname));
       console.log('owner', owner);
       return { addr: owner, ttl: DEFAULT_TTL };
     } catch (error) {
