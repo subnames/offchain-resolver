@@ -33,10 +33,11 @@ export class L2Resolver implements Database {
     }
 
     try {
-      console.log('querying', name);
-      const subname = name.split('.')[0]
-      const owner = await this.contract.addr(ethers.utils.namehash(subname));
-      console.log('owner', owner);
+      console.log('querying db: name = ', name);
+      const node = ethers.utils.namehash(name);
+      console.log('querying db: node = ', node);
+      const owner = await this.contract.addr(node);
+      console.log('querying db: owner = ', owner);
       return { addr: owner, ttl: DEFAULT_TTL };
     } catch (error) {
       console.error('Error fetching subname owner:', error);
