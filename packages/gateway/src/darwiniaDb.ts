@@ -4,24 +4,27 @@ import { Database } from './server';
 const DEFAULT_TTL = 300; // 5 minutes
 
 const ABI = [
-  "function getSubnameOwner(string) view returns (address)",
+  "function addr(bytes32) view returns (address)",
+  "function text(bytes32, string) view returns (string)"
 ];
 
 export class DarwiniaDatabase implements Database {
   private provider: ethers.providers.JsonRpcProvider;
   private contract: ethers.Contract;
 
-  constructor(darwinia_rpc_url: string, darwinia_subname_registry_contract_address: string) {
+  constructor(darwinia_rpc_url: string, l2_resolver_contract_address: string) {
     this.provider = new ethers.providers.JsonRpcProvider(darwinia_rpc_url);
-    this.contract = new ethers.Contract(darwinia_subname_registry_contract_address, ABI, this.provider);
+    this.contract = new ethers.Contract(l2_resolver_contract_address, ABI, this.provider);
   }
 
   async addr(name: string, coinType: number): Promise<{ addr: string; ttl: number }> {
+    console.log('querying address', name);
+
     if (coinType !== 60) { // ETH coin type
       return { addr: ethers.constants.AddressZero, ttl: DEFAULT_TTL };
     }
 
-    if (name === 'ringdao.eth') {
+    if (name === 'darwinia.eth') {
       return { addr: '0x1234567890123456789012345678901234567890', ttl: DEFAULT_TTL };
     }
 
@@ -31,20 +34,32 @@ export class DarwiniaDatabase implements Database {
     }
 
     try {
-      console.log('querying', name);
-      const subname = name.split('.')[0]
-      const owner = await this.contract.getSubnameOwner(subname);
-      console.log('owner', owner);
-      return { addr: owner, ttl: DEFAULT_TTL };
+      const node = ethers.utils.namehash(name)
+      const address = await this.contract.addr(node);
+      console.log('address of ', name, 'is', address);
+      return { addr: address, ttl: DEFAULT_TTL };
     } catch (error) {
-      console.error('Error fetching subname owner:', error);
+      console.error('Error resolving name:', error);
       return { addr: ethers.constants.AddressZero, ttl: DEFAULT_TTL };
     }
   }
 
-  async text(_name: string, _key: string): Promise<{ value: string; ttl: number }> {
-    // The SubnameRegistry doesn't support text records, so we'll return an empty string
-    return { value: '', ttl: DEFAULT_TTL };
+  async text(name: string, key: string): Promise<{ value: string; ttl: number }> {
+    console.log('querying text record', name, key);
+
+    if (name === 'darwinia.eth' || name.split('.').length > 3) {
+      return { value: 'hello', ttl: DEFAULT_TTL };
+    }
+
+    try {
+      const node = ethers.utils.namehash(name)
+      const record = await this.contract.text(node, key);
+      console.log('text record of ', name, 'is', record);
+      return { value: record, ttl: DEFAULT_TTL };
+    } catch (error) {
+      console.error('Error resolving text record:', error);
+      return { value: ethers.constants.AddressZero, ttl: DEFAULT_TTL };
+    }
   }
 
   async contenthash(_name: string): Promise<{ contenthash: string; ttl: number }> {
