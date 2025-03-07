@@ -12,8 +12,8 @@ export class DarwiniaDatabase implements Database {
   private provider: ethers.providers.JsonRpcProvider;
   private contract: ethers.Contract;
 
-  constructor(darwinia_rpc_url: string, l2_resolver_contract_address: string) {
-    this.provider = new ethers.providers.JsonRpcProvider(darwinia_rpc_url);
+  constructor(rpc_url: string, l2_resolver_contract_address: string) {
+    this.provider = new ethers.providers.JsonRpcProvider(rpc_url);
     this.contract = new ethers.Contract(l2_resolver_contract_address, ABI, this.provider);
   }
 

@@ -10,7 +10,7 @@ program
     '-k --private-key <key>',
     'Private key to sign responses with. Prefix with @ to read from a file'
   )
-  .requiredOption('-d --darwinia-rpc-url <url>', 'Darwinia RPC URL')
+  .requiredOption('-d --rpc-url <url>', 'RPC URL')
   .requiredOption('-c --l2-resolver-contract-address <address>', 'L2 resolver contract address')
   .option('-t --ttl <number>', 'TTL for signatures', '300')
   .option('-p --port <number>', 'Port number to serve on', '8080');
@@ -28,12 +28,12 @@ if (privateKey.startsWith('@')) {
 const signingAddress = ethers.utils.computeAddress(privateKey);
 const signer = new ethers.utils.SigningKey(privateKey);
 
-const db = new DarwiniaDatabase(options.darwiniaRpcUrl, options.l2ResolverContractAddress);
+const db = new DarwiniaDatabase(options.rpcUrl, options.l2ResolverContractAddress);
 const app = makeApp(signer, '/', db);
 
 console.log(`Serving on port ${options.port}`);
 console.log(`signingAddress: ${signingAddress}`);
-console.log(`darwiniaRpcUrl: ${options.darwiniaRpcUrl}`);
+console.log(`rpcUrl: ${options.rpcUrl}`);
 console.log(`l2ResolverContractAddress: ${options.l2ResolverContractAddress}`);
 
 app.listen(parseInt(options.port));
