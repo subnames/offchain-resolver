@@ -91,34 +91,25 @@ async function query(
     validUntil: Math.floor(Date.now() / 1000 + ttl),
   };
 }
+
 import cors from 'cors';
 import express from 'express';
 
 // Custom Server class that extends the original Server class
 export class Server extends OriginalServer {
-  // Override the makeApp method
   makeApp(prefix: string) {
-  
-    
     const app = express();
     app.use(cors());
     app.use(express.json());
     
-    // Custom routes and middleware can be added here
-    console.log('Using custom makeApp implementation');
-    
-    // Original routes
     app.get(`${prefix}:sender/:callData.json`, this.handleRequest.bind(this));
     app.post(prefix, this.handleRequest.bind(this));
-    
-    // Add your custom routes here
-    // Example: app.get(`${prefix}health`, (req, res) => res.send('OK'));
     
     return app;
   }
 
   async handleRequest(req: express.Request, res: express.Response) {
-    console.log('Handling request:', (req as any).path);
+    console.log('request path:', (req as any).path);
     await super.handleRequest(req, res);
   }
 }
@@ -129,8 +120,9 @@ export function makeServer(signer: ethers.utils.SigningKey, db: Database) {
     {
       type: 'resolve',
       func: async ([encodedName, data]: Result, request) => {
+        console.log(`-- resolve("${encodedName}", "${data}") --`);
         const name = decodeDnsName(Buffer.from(encodedName.slice(2), 'hex'));
-        console.log("querying", name, data);
+        console.log(`decoded name: ${name}`);
         // Query the database
         const { result, validUntil } = await query(db, name, data);
 

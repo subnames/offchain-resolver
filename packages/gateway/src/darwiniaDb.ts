@@ -18,7 +18,7 @@ export class DarwiniaDatabase implements Database {
   }
 
   async addr(name: string, coinType: number): Promise<{ addr: string; ttl: number }> {
-    console.log('querying address', name);
+    console.log('== querying address', name, coinType);
 
     if (coinType !== 60) { // ETH coin type
       return { addr: ethers.constants.AddressZero, ttl: DEFAULT_TTL };
@@ -36,7 +36,7 @@ export class DarwiniaDatabase implements Database {
     try {
       const node = ethers.utils.namehash(name)
       const address = await this.contract.addr(node);
-      console.log('address of ', name, 'is', address);
+      console.log('address of "', name, '" is', address);
       return { addr: address, ttl: DEFAULT_TTL };
     } catch (error) {
       console.error('Error resolving name:', error);
@@ -45,7 +45,7 @@ export class DarwiniaDatabase implements Database {
   }
 
   async text(name: string, key: string): Promise<{ value: string; ttl: number }> {
-    console.log('querying text record', name, key);
+    console.log('== querying text record', name, key);
 
     if (name === 'darwinia.eth' || name.split('.').length > 3) {
       return { value: 'hello', ttl: DEFAULT_TTL };
@@ -54,15 +54,16 @@ export class DarwiniaDatabase implements Database {
     try {
       const node = ethers.utils.namehash(name)
       const record = await this.contract.text(node, key);
-      console.log('text record of ', name, 'is', record);
+      console.log('text record of "', name, '" is', record);
       return { value: record, ttl: DEFAULT_TTL };
     } catch (error) {
       console.error('Error resolving text record:', error);
-      return { value: ethers.constants.AddressZero, ttl: DEFAULT_TTL };
+      return { value: '', ttl: DEFAULT_TTL };
     }
   }
 
-  async contenthash(_name: string): Promise<{ contenthash: string; ttl: number }> {
+  async contenthash(name: string): Promise<{ contenthash: string; ttl: number }> {
+    console.log('== querying contenthash', name);
     // The SubnameRegistry doesn't support contenthash, so we'll return an empty string
     return { contenthash: '0x', ttl: DEFAULT_TTL };
   }
