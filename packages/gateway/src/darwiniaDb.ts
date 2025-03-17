@@ -54,7 +54,7 @@ export class DarwiniaDatabase implements Database {
     try {
       const node = ethers.utils.namehash(name)
       const record = await this.contract.text(node, key);
-      console.log(`     text record of "${name}" is "${record}"`);
+      console.log(`     text record of "${name}"'s "${key}" is "${record}"`);
       return { value: record, ttl: DEFAULT_TTL };
     } catch (error) {
       console.error('     error resolving text record:', error);
