@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { Database } from './server';
+import { ETH_COIN_TYPE } from './utils';
 
 const DEFAULT_TTL = 300; // 5 minutes
 
@@ -8,7 +9,7 @@ const ABI = [
   "function text(bytes32, string) view returns (string)"
 ];
 
-export class DarwiniaDatabase implements Database {
+export class L2Resolver implements Database {
   private provider: ethers.providers.JsonRpcProvider;
   private contract: ethers.Contract;
 
@@ -17,8 +18,8 @@ export class DarwiniaDatabase implements Database {
     this.contract = new ethers.Contract(l2_resolver_contract_address, ABI, this.provider);
   }
 
-  async addr(name: string, coinType: number): Promise<{ addr: string; ttl: number }> {
-    console.log(`   - querying address: "${name}", coinType: ${coinType}`);
+  async addr2(name: string, coinType: number): Promise<{ addr: string; ttl: number }> {
+    console.log(`   - addr2("${name}", ${coinType})`);
 
     if (coinType !== 60) { // ETH coin type
       return { addr: ethers.constants.AddressZero, ttl: DEFAULT_TTL };
@@ -44,8 +45,13 @@ export class DarwiniaDatabase implements Database {
     }
   }
 
+  async addr(name: string): Promise<{ addr: string; ttl: number }> {
+    console.log(`   - addr("${name}")`);
+    return await this.addr2(name, ETH_COIN_TYPE);
+  }
+
   async text(name: string, key: string): Promise<{ value: string; ttl: number }> {
-    console.log(`   - querying text record: "${name}", key: "${key}"`);
+    console.log(`   - text("${name}", "${key}")`);
 
     if (name === 'darwinia.eth' || name.split('.').length > 3) {
       return { value: 'hello', ttl: DEFAULT_TTL };
@@ -63,7 +69,7 @@ export class DarwiniaDatabase implements Database {
   }
 
   async contenthash(name: string): Promise<{ contenthash: string; ttl: number }> {
-    console.log(`   - querying contenthash: "${name}"`);
+    console.log(`   - contenthash("${name}")`);
     // The SubnameRegistry doesn't support contenthash, so we'll return an empty string
     return { contenthash: '0x', ttl: DEFAULT_TTL };
   }

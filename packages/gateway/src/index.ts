@@ -2,7 +2,7 @@ import { makeApp } from './server';
 import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { ethers } from 'ethers';
-import { DarwiniaDatabase } from './darwiniaDb';
+import { L2Resolver } from './l2_resolver';
 
 const program = new Command();
 program
@@ -12,7 +12,6 @@ program
   )
   .requiredOption('-d --rpc-url <url>', 'RPC URL')
   .requiredOption('-c --l2-resolver-contract-address <address>', 'L2 resolver contract address')
-  .option('-t --ttl <number>', 'TTL for signatures', '300')
   .option('-p --port <number>', 'Port number to serve on', '8080');
 
 program.parse(process.argv);
@@ -28,8 +27,11 @@ if (privateKey.startsWith('@')) {
 const signingAddress = ethers.utils.computeAddress(privateKey);
 const signer = new ethers.utils.SigningKey(privateKey);
 
-const db = new DarwiniaDatabase(options.rpcUrl, options.l2ResolverContractAddress);
-const app = makeApp(signer, '/', db);
+const app = makeApp(
+  signer,
+  '/',
+  new L2Resolver(options.rpcUrl, options.l2ResolverContractAddress)
+);
 
 console.log(`Serving on port ${options.port}`);
 console.log(`signingAddress: ${signingAddress}`);
