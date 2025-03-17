@@ -6,12 +6,6 @@
   "repository": "git@github.com:ensdomains/offchain-resolver.git",
   "author": "Nick Johnson <arachnid@notdot.net>",
   "license": "MIT",
-  "workspaces": [
-    "packages/contracts",
-    "packages/gateway",
-    "packages/gateway-worker",
-    "packages/client"
-  ],
   "private": true,
   "scripts": {
     "start:node": "yarn workspace @ensdomains/offchain-resolver-contracts start",

@@ -1,4 +1,4 @@
-import { Server } from '@chainlink/ccip-read-server';
+import { Server as OriginalServer } from '@chainlink/ccip-read-server';
 import { ethers, BytesLike } from 'ethers';
 import { hexConcat, Result } from 'ethers/lib/utils';
 import { ETH_COIN_TYPE } from './utils';
@@ -91,6 +91,37 @@ async function query(
     validUntil: Math.floor(Date.now() / 1000 + ttl),
   };
 }
+import cors from 'cors';
+import express from 'express';
+
+// Custom Server class that extends the original Server class
+export class Server extends OriginalServer {
+  // Override the makeApp method
+  makeApp(prefix: string) {
+  
+    
+    const app = express();
+    app.use(cors());
+    app.use(express.json());
+    
+    // Custom routes and middleware can be added here
+    console.log('Using custom makeApp implementation');
+    
+    // Original routes
+    app.get(`${prefix}:sender/:callData.json`, this.handleRequest.bind(this));
+    app.post(prefix, this.handleRequest.bind(this));
+    
+    // Add your custom routes here
+    // Example: app.get(`${prefix}health`, (req, res) => res.send('OK'));
+    
+    return app;
+  }
+
+  async handleRequest(req: express.Request, res: express.Response) {
+    console.log('Handling request:', req);
+    await super.handleRequest(req, res);
+  }
+}
 
 export function makeServer(signer: ethers.utils.SigningKey, db: Database) {
   const server = new Server();
@@ -122,6 +153,8 @@ export function makeServer(signer: ethers.utils.SigningKey, db: Database) {
   ]);
   return server;
 }
+
+
 
 export function makeApp(
   signer: ethers.utils.SigningKey,
