@@ -109,7 +109,7 @@ export class Server extends OriginalServer {
   }
 
   async handleRequest(req: express.Request, res: express.Response) {
-    console.log('request path:', (req as any).path);
+    console.log('== request path:', (req as any).path);
     await super.handleRequest(req, res);
   }
 }
@@ -120,9 +120,9 @@ export function makeServer(signer: ethers.utils.SigningKey, db: Database) {
     {
       type: 'resolve',
       func: async ([encodedName, data]: Result, request) => {
-        console.log(`-- resolve("${encodedName}", "${data}") --`);
+        console.log(`   resolve("${encodedName}", "${data}")`);
         const name = decodeDnsName(Buffer.from(encodedName.slice(2), 'hex'));
-        console.log(`decoded name: ${name}`);
+        console.log(`   decoded name: "${name}"`);
         // Query the database
         const { result, validUntil } = await query(db, name, data);
 
