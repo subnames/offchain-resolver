@@ -118,7 +118,7 @@ export class Server extends OriginalServer {
   }
 
   async handleRequest(req: express.Request, res: express.Response) {
-    console.log('Handling request:', req);
+    console.log('Handling request:', (req as any).path);
     await super.handleRequest(req, res);
   }
 }
