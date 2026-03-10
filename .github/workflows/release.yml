@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - resolver
-      - main
+      # - main
     tags:
       - "v*"
 
